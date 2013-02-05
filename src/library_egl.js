@@ -71,6 +71,17 @@ var LibraryEGL = {
       return 0;
     }
   },
+
+  // EGLAPI EGLBoolean EGLAPIENTRY eglTerminate(EGLDisplay dpy);
+  eglTerminate: function(display) {
+    if (display != 62000 /* Magic ID for Emscripten 'default display' */) {
+      EGL.setErrorCode(0x3008 /* EGL_BAD_DISPLAY */);
+      return 0;
+    }
+    // TODO: Tear down EGL here. Currently a no-op since we don't need to actually do anything here for the browser.
+    EGL.setErrorCode(0x3000 /* EGL_SUCCESS */);
+    return 1;
+  },
   
 // EGLAPI EGLBoolean EGLAPIENTRY eglTerminate(EGLDisplay dpy);
   eglTerminate: function(display) {
@@ -267,6 +278,22 @@ var LibraryEGL = {
     return 62004; // Magic ID for Emscripten EGLContext
   },
 
+  // EGLAPI EGLBoolean EGLAPIENTRY eglDestroyContext(EGLDisplay dpy, EGLContext ctx);
+  eglDestroyContext: function(display, context) {
+    if (display != 62000 /* Magic ID for Emscripten 'default display' */) {
+      EGL.setErrorCode(0x3008 /* EGL_BAD_DISPLAY */);
+      return 0;
+    }
+
+    if (context != 62004 /* Magic ID for Emscripten EGLContext */) {
+      EGL.setErrorCode(0x3006 /* EGL_BAD_CONTEXT */);
+      return 0;
+    }
+
+    EGL.setErrorCode(0x3000 /* EGL_SUCCESS */);
+    return 1;
+  }, 
+
   // EGLAPI EGLBoolean EGLAPIENTRY eglQuerySurface(EGLDisplay dpy, EGLSurface surface, EGLint attribute, EGLint *value);
   eglQuerySurface: function(display, surface, attribute, value) { 
     if (display != 62000 /* Magic ID for Emscripten 'default display' */) {
@@ -375,6 +402,7 @@ var LibraryEGL = {
     return EGL.eglErrorCode;
   },
 
+  // EGLAPI const char * EGLAPIENTRY eglQueryString(EGLDisplay dpy, EGLint name);
   eglQueryString: function(display, name) {
     if (display != 62000 /* Magic ID for Emscripten 'default display' */) {
       EGL.setErrorCode(0x3008 /* EGL_BAD_DISPLAY */);
@@ -451,7 +479,8 @@ var LibraryEGL = {
     EGL.setErrorCode(0x3000 /* EGL_SUCCESS */);
     return 1;
   },
-  
+
+  // EGLAPI EGLBoolean EGLAPIENTRY eglSwapBuffers(EGLDisplay dpy, EGLSurface surface);
   eglSwapBuffers: function() {
     EGL.setErrorCode(0x3000 /* EGL_SUCCESS */);
   },
