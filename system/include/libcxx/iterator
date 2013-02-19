@@ -1417,8 +1417,11 @@ private:
     bool __can_add(difference_type __n, true_type) const;
 
     template <class _Cp, class _Up> friend class __debug_iter;
+#if defined(__clang__)
+    friend typename _Container::__self;
+#else
     friend class _Container::__self;
-
+#endif
     template <class _Cp, class _Iter1, class _Iter2>
     friend
     bool
