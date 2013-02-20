@@ -7214,6 +7214,73 @@ def process(filename):
       for corrupt in [1]:
         self.do_run(src.replace('CORRUPT', str(corrupt)), 'Heap corruption detected!' if corrupt else 'All ok, 4209')
 
+    def test_corruption_2(self):
+      if Settings.ASM_JS: return self.skip('cannot use corruption checks in asm')
+      if Settings.USE_TYPED_ARRAYS != 2: return self.skip('needs ta2 for actual test')
+
+      Settings.SAFE_HEAP = 1
+      Settings.CORRUPTION_CHECK = 1
+
+      # test for free(0), malloc(0), etc.
+      src = r'''
+        #include <iostream>
+        #include <fstream>
+        #include <stdlib.h>
+        #include <stdio.h>
+
+        void bye() {
+          printf("all ok\n");
+        }
+
+        int main() {
+          atexit(bye);
+
+          std::string testPath = "/Script/WA-KA.txt";
+          std::fstream str(testPath.c_str(), std::ios::in | std::ios::binary);
+
+          if (str.is_open())
+          {
+            std::cout << "open!" << std::endl;
+          } else {
+            std::cout << "missing!" << std::endl;
+          }
+
+          return 1;
+        }
+        '''
+      self.do_run(src, 'missing!\nall ok\n')
+
+    def test_corruption_3(self):
+      if Settings.ASM_JS: return self.skip('cannot use corruption checks in asm')
+      if Settings.USE_TYPED_ARRAYS != 2: return self.skip('needs ta2 for actual test')
+
+      Settings.CORRUPTION_CHECK = 1
+
+      # realloc
+      src = r'''
+        #include <stdlib.h>
+        #include <stdio.h>
+        #include <assert.h>
+
+        void bye() {
+          printf("all ok\n");
+        }
+
+        int main(int argc, char **argv) {
+          atexit(bye);
+
+          char *buffer = (char*)malloc(100);
+          for (int i = 0; i < 100; i++) buffer[i] = (i*i)%256;
+          buffer = (char*)realloc(buffer, argc + 50);
+          for (int i = 0; i < argc + 50; i++) {
+            //printf("%d : %d : %d : %d\n", i, (int)(buffer + i), buffer[i], (char)((i*i)%256));
+            assert(buffer[i] == (char)((i*i)%256));
+          }
+          return 1;
+        }
+        '''
+      self.do_run(src, 'all ok\n')
+
     ### Integration tests
 
     def test_ccall(self):
@@ -10917,6 +10984,10 @@ elif 'benchmark' in str(sys.argv):
                       '-s', 'TOTAL_MEMORY=128*1024*1024', '-s', 'FAST_MEMORY=10*1024*1024',
                       '-o', final_filename] + shared_args + emcc_args, stdout=PIPE, stderr=self.stderr_redirect).communicate()
       assert os.path.exists(final_filename), 'Failed to compile file: ' + output[0]
+
+      # Hardcode in the arguments, so js is portable without manual commandlinearguments
+      js = open(final_filename).read()
+      open(final_filename, 'w').write(js.replace('var ret = run();', 'var ret = run(%s);' % str(args)))
 
       # Run JS
       global total_times, tests_done

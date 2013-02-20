@@ -2498,6 +2498,7 @@ var LibraryGL = {
     GL.immediate.matrix.lib.mat4.multiply(GL.immediate.matrix[GL.immediate.currentMatrix],
         GL.immediate.matrix.lib.mat4.frustum(left, right, bottom, top_, nearVal, farVal));
   },
+  glFrustumf: 'glFrustum',
 
   glOrtho: function(left, right, bottom, top_, nearVal, farVal) {
     GL.immediate.matricesModified = true;
@@ -2599,8 +2600,8 @@ var LibraryGL = {
 
   glTexGeni: function() { throw 'glTexGeni: TODO' },
   glTexGenfv: function() { throw 'glTexGenfv: TODO' },
-  glTexEnvi: function() { throw 'glTexEnvi: TODO' },
-  glTexEnvfv: function() { throw 'glTexEnvfv: TODO' },
+  glTexEnvi: function() { Runtime.warnOnce('glTexEnvi: TODO') },
+  glTexEnvfv: function() { Runtime.warnOnce('glTexEnvfv: TODO') },
 
   glTexImage1D: function() { throw 'glTexImage1D: TODO' },
   glTexCoord3f: function() { throw 'glTexCoord3f: TODO' },
@@ -2613,6 +2614,19 @@ var LibraryGL = {
   glVertexAttribPointer__sig: 'viiiiii',
   glCheckFramebufferStatus__sig: 'ii',
   glRenderbufferStorage__sig: 'viiii',
+  
+  // Open GLES1.1 compatibility
+  glGenFramebuffersOES : 'glGenFramebuffers',
+  glGenRenderbuffersOES : 'glGenRenderbuffers',
+  glBindFramebufferOES : 'glBindFramebuffer',
+  glBindRenderbufferOES : 'glBindRenderbuffer',
+  glGetRenderbufferParameterivOES : 'glGetRenderbufferParameteriv',
+  glFramebufferRenderbufferOES : 'glFramebufferRenderbuffer',
+  glRenderbufferStorageOES : 'glRenderbufferStorage',
+  glCheckFramebufferStatusOES : 'glCheckFramebufferStatus',
+  glDeleteFramebuffersOES : 'glDeleteFramebuffers',
+  glDeleteRenderbuffersOES : 'glDeleteRenderbuffers'
+  
 };
 
 // Simple pass-through functions. Starred ones have return values. [X] ones have X in the C name but not in the JS name
